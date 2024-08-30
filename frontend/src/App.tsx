@@ -93,6 +93,15 @@ const App: React.FC = () => {
           onChange={(e) => setBet(e.target.value)}
           type="number"
           InputProps={{ inputProps: { min: 1 } }}
+          sx={{
+            input: { color: 'white' },
+            label: { color: 'white' },
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': { borderColor: 'white' },
+              '&:hover fieldset': { borderColor: 'white' },
+              '&.Mui-focused fieldset': { borderColor: 'white' },
+            },
+          }}
         />
         <Button
           variant="contained"
