@@ -28,7 +28,7 @@ const spinAnimation = (speed: number) => keyframes`
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-${100 / 9}%);
+    transform: translateY(-900%);
   }
 `;
 
@@ -37,15 +37,16 @@ const slowSpinAnimation = (speed: number) => keyframes`
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-${100 / 9}%);
+    transform: translateY(-900%);
   }
 `;
 
-const Reel = styled(Box)<{ spinning: boolean; slowing: boolean; speed: number }>(({
+const Reel = styled(Box)<{ spinning: boolean; slowing: boolean; speed: number; startPosition: number }>(({
   theme,
   spinning,
   slowing,
-  speed
+  speed,
+  startPosition
 }) => ({
   fontSize: '4rem',
   padding: theme.spacing(2),
@@ -62,6 +63,7 @@ const Reel = styled(Box)<{ spinning: boolean; slowing: boolean; speed: number }>
       : slowing
       ? `${slowSpinAnimation(speed)} 2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards`
       : 'none',
+    transform: `translateY(-${startPosition * 100}%)`,
   }
 }));
 
@@ -75,6 +77,7 @@ const App: React.FC = () => {
   const [isSlowing, setIsSlowing] = useState<boolean>(false);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<string>('');
+  const [startPositions, setStartPositions] = useState<number[]>([0, 3, 6]);
 
   useEffect(() => {
     fetchBalance();
@@ -92,6 +95,7 @@ const App: React.FC = () => {
   const handleSpin = async () => {
     setIsSpinning(true);
     setIsSlowing(false);
+    setStartPositions([Math.floor(Math.random() * 9), Math.floor(Math.random() * 9), Math.floor(Math.random() * 9)]);
     try {
       setTimeout(() => {
         setIsSpinning(false);
@@ -129,7 +133,7 @@ const App: React.FC = () => {
       </Typography>
       <SlotMachine>
         {[0.3, 0.5, 0.7].map((speed, index) => (
-          <Reel key={index} spinning={isSpinning} slowing={isSlowing} speed={speed}>
+          <Reel key={index} spinning={isSpinning} slowing={isSlowing} speed={speed} startPosition={startPositions[index]}>
             <div>
               {[...symbols, ...symbols].map((symbol, i) => (
                 <div key={i}>{symbol}</div>
