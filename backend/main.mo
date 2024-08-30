@@ -12,7 +12,7 @@ import Nat8 "mo:base/Nat8";
 
 actor SlotMachine {
   stable var playerBalance : Nat = 1000; // Initial balance of 1000 JefeCoins
-  let symbols = ["🍒", "🍋", "🍊", "🍇", "💰", "7️⃣"];
+  let symbols = ["🍒", "🍋", "🍊", "🍇", "💰", "7️⃣", "🎰", "🃏", "🎲"];
   var currentSymbols : [Text] = ["", "", ""];
 
   public query func getBalance() : async Nat {

@@ -23,28 +23,29 @@ const SlotMachine = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-const spinAnimation = keyframes`
+const spinAnimation = (speed: number) => keyframes`
   0% {
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-${100 / 6}%);
+    transform: translateY(-${100 / 9}%);
   }
 `;
 
-const slowSpinAnimation = keyframes`
+const slowSpinAnimation = (speed: number) => keyframes`
   0% {
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-${100 / 6}%);
+    transform: translateY(-${100 / 9}%);
   }
 `;
 
-const Reel = styled(Box)<{ spinning: boolean; slowing: boolean }>(({
+const Reel = styled(Box)<{ spinning: boolean; slowing: boolean; speed: number }>(({
   theme,
   spinning,
-  slowing
+  slowing,
+  speed
 }) => ({
   fontSize: '4rem',
   padding: theme.spacing(2),
@@ -57,14 +58,14 @@ const Reel = styled(Box)<{ spinning: boolean; slowing: boolean }>(({
     display: 'flex',
     flexDirection: 'column',
     animation: spinning
-      ? `${spinAnimation} 0.5s linear infinite`
+      ? `${spinAnimation(speed)} ${speed}s linear infinite`
       : slowing
-      ? `${slowSpinAnimation} 2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards`
+      ? `${slowSpinAnimation(speed)} 2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards`
       : 'none',
   }
 }));
 
-const symbols = ["🍒", "🍋", "🍊", "🍇", "💰", "7️⃣"];
+const symbols = ["🍒", "🍋", "🍊", "🍇", "💰", "7️⃣", "🎰", "🃏", "🎲"];
 
 const App: React.FC = () => {
   const [balance, setBalance] = useState<bigint>(BigInt(0));
@@ -127,8 +128,8 @@ const App: React.FC = () => {
         Balance: {balance.toString()} JefeCoins
       </Typography>
       <SlotMachine>
-        {[0, 1, 2].map((index) => (
-          <Reel key={index} spinning={isSpinning} slowing={isSlowing}>
+        {[0.3, 0.5, 0.7].map((speed, index) => (
+          <Reel key={index} spinning={isSpinning} slowing={isSlowing} speed={speed}>
             <div>
               {[...symbols, ...symbols].map((symbol, i) => (
                 <div key={i}>{symbol}</div>
