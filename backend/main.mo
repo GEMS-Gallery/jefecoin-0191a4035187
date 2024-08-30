@@ -20,7 +20,7 @@ actor SlotMachine {
   };
 
   public query func getSymbols() : async [Text] {
-    currentSymbols
+    symbols
   };
 
   public shared func spin(bet : Nat) : async Result.Result<{symbols: [Text]; winAmount: Nat}, Text> {

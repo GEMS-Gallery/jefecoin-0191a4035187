@@ -67,8 +67,6 @@ const Reel = styled(Box)<{ spinning: boolean; slowing: boolean; speed: number; s
   }
 }));
 
-const symbols = ["🍒", "🍋", "🍊", "🍇", "💰", "7️⃣", "🎰", "🃏", "🎲"];
-
 const App: React.FC = () => {
   const [balance, setBalance] = useState<bigint>(BigInt(0));
   const [currentSymbols, setCurrentSymbols] = useState<string[]>(['', '', '']);
@@ -78,9 +76,11 @@ const App: React.FC = () => {
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<string>('');
   const [startPositions, setStartPositions] = useState<number[]>([0, 3, 6]);
+  const [symbols, setSymbols] = useState<string[]>([]);
 
   useEffect(() => {
     fetchBalance();
+    fetchSymbols();
   }, []);
 
   const fetchBalance = async () => {
@@ -92,10 +92,19 @@ const App: React.FC = () => {
     }
   };
 
+  const fetchSymbols = async () => {
+    try {
+      const result = await backend.getSymbols();
+      setSymbols(result);
+    } catch (error) {
+      console.error('Error fetching symbols:', error);
+    }
+  };
+
   const handleSpin = async () => {
     setIsSpinning(true);
     setIsSlowing(false);
-    setStartPositions([Math.floor(Math.random() * 9), Math.floor(Math.random() * 9), Math.floor(Math.random() * 9)]);
+    setStartPositions([Math.floor(Math.random() * symbols.length), Math.floor(Math.random() * symbols.length), Math.floor(Math.random() * symbols.length)]);
     try {
       setTimeout(() => {
         setIsSpinning(false);
