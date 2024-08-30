@@ -28,13 +28,23 @@ const spinAnimation = keyframes`
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-100%);
+    transform: translateY(-${100 / 6}%);
   }
 `;
 
-const Reel = styled(Box)<{ spinning: boolean }>(({
+const slowSpinAnimation = keyframes`
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-${100 / 6}%);
+  }
+`;
+
+const Reel = styled(Box)<{ spinning: boolean; slowing: boolean }>(({
   theme,
-  spinning
+  spinning,
+  slowing
 }) => ({
   fontSize: '4rem',
   padding: theme.spacing(2),
@@ -46,15 +56,22 @@ const Reel = styled(Box)<{ spinning: boolean }>(({
   '& > div': {
     display: 'flex',
     flexDirection: 'column',
-    animation: spinning ? `${spinAnimation} 1s linear infinite` : 'none',
+    animation: spinning
+      ? `${spinAnimation} 0.5s linear infinite`
+      : slowing
+      ? `${slowSpinAnimation} 2s cubic-bezier(0.25, 0.1, 0.25, 1) forwards`
+      : 'none',
   }
 }));
 
+const symbols = ["🍒", "🍋", "🍊", "🍇", "💰", "7️⃣"];
+
 const App: React.FC = () => {
   const [balance, setBalance] = useState<bigint>(BigInt(0));
-  const [symbols, setSymbols] = useState<string[]>(['', '', '']);
+  const [currentSymbols, setCurrentSymbols] = useState<string[]>(['', '', '']);
   const [bet, setBet] = useState<string>('10');
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
+  const [isSlowing, setIsSlowing] = useState<boolean>(false);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
   const [modalContent, setModalContent] = useState<string>('');
 
@@ -73,24 +90,31 @@ const App: React.FC = () => {
 
   const handleSpin = async () => {
     setIsSpinning(true);
+    setIsSlowing(false);
     try {
+      setTimeout(() => {
+        setIsSpinning(false);
+        setIsSlowing(true);
+      }, 2000);
+
       setTimeout(async () => {
         const result = await backend.spin(BigInt(bet));
         if ('ok' in result) {
-          setSymbols(result.ok.symbols);
+          setCurrentSymbols(result.ok.symbols);
           setModalContent(`You won ${result.ok.winAmount.toString()} JefeCoins!`);
         } else {
           setModalContent(result.err);
         }
         setModalIsOpen(true);
         fetchBalance();
-        setIsSpinning(false);
-      }, 1000);
+        setIsSlowing(false);
+      }, 4000);
     } catch (error) {
       console.error('Error spinning:', error);
       setModalContent('An error occurred while spinning.');
       setModalIsOpen(true);
       setIsSpinning(false);
+      setIsSlowing(false);
     }
   };
 
@@ -103,11 +127,11 @@ const App: React.FC = () => {
         Balance: {balance.toString()} JefeCoins
       </Typography>
       <SlotMachine>
-        {symbols.map((symbol, index) => (
-          <Reel key={index} spinning={isSpinning}>
+        {[0, 1, 2].map((index) => (
+          <Reel key={index} spinning={isSpinning} slowing={isSlowing}>
             <div>
-              {[...Array(20)].map((_, i) => (
-                <div key={i}>{symbol || '?'}</div>
+              {[...symbols, ...symbols].map((symbol, i) => (
+                <div key={i}>{symbol}</div>
               ))}
             </div>
           </Reel>
@@ -135,10 +159,10 @@ const App: React.FC = () => {
           variant="contained"
           color="secondary"
           onClick={handleSpin}
-          disabled={isSpinning}
-          startIcon={isSpinning ? <CircularProgress size={20} /> : null}
+          disabled={isSpinning || isSlowing}
+          startIcon={(isSpinning || isSlowing) ? <CircularProgress size={20} /> : null}
         >
-          {isSpinning ? 'Spinning...' : 'Spin'}
+          {(isSpinning || isSlowing) ? 'Spinning...' : 'Spin'}
         </Button>
       </Box>
       <Modal
