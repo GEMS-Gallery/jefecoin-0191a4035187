@@ -1,0 +1,13 @@
+type Result = 
+ variant {
+   err: text;
+   ok: record {
+         symbols: vec text;
+         winAmount: nat;
+       };
+ };
+service : {
+  getBalance: () -> (nat) query;
+  getSymbols: () -> (vec text) query;
+  spin: (nat) -> (Result);
+}
