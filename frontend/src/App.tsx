@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { backend } from 'declarations/backend';
 import { Box, Button, Typography, TextField, CircularProgress } from '@mui/material';
-import { styled } from '@mui/system';
+import { styled, keyframes } from '@mui/system';
 import Modal from 'react-modal';
 
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -23,12 +23,31 @@ const SlotMachine = styled(Box)(({ theme }) => ({
   marginBottom: theme.spacing(2),
 }));
 
-const Reel = styled(Box)(({ theme }) => ({
+const spinAnimation = keyframes`
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+`;
+
+const Reel = styled(Box)<{ spinning: boolean }>(({
+  theme,
+  spinning
+}) => ({
   fontSize: '4rem',
   padding: theme.spacing(2),
   backgroundColor: theme.palette.common.white,
   borderRadius: theme.shape.borderRadius,
   color: theme.palette.common.black,
+  overflow: 'hidden',
+  height: '6rem',
+  '& > div': {
+    display: 'flex',
+    flexDirection: 'column',
+    animation: spinning ? `${spinAnimation} 1s linear infinite` : 'none',
+  }
 }));
 
 const App: React.FC = () => {
@@ -55,21 +74,24 @@ const App: React.FC = () => {
   const handleSpin = async () => {
     setIsSpinning(true);
     try {
-      const result = await backend.spin(BigInt(bet));
-      if ('ok' in result) {
-        setSymbols(result.ok.symbols);
-        setModalContent(`You won ${result.ok.winAmount.toString()} JefeCoins!`);
-      } else {
-        setModalContent(result.err);
-      }
-      setModalIsOpen(true);
-      fetchBalance();
+      setTimeout(async () => {
+        const result = await backend.spin(BigInt(bet));
+        if ('ok' in result) {
+          setSymbols(result.ok.symbols);
+          setModalContent(`You won ${result.ok.winAmount.toString()} JefeCoins!`);
+        } else {
+          setModalContent(result.err);
+        }
+        setModalIsOpen(true);
+        fetchBalance();
+        setIsSpinning(false);
+      }, 1000);
     } catch (error) {
       console.error('Error spinning:', error);
       setModalContent('An error occurred while spinning.');
       setModalIsOpen(true);
+      setIsSpinning(false);
     }
-    setIsSpinning(false);
   };
 
   return (
@@ -82,7 +104,13 @@ const App: React.FC = () => {
       </Typography>
       <SlotMachine>
         {symbols.map((symbol, index) => (
-          <Reel key={index}>{symbol || '?'}</Reel>
+          <Reel key={index} spinning={isSpinning}>
+            <div>
+              {[...Array(20)].map((_, i) => (
+                <div key={i}>{symbol || '?'}</div>
+              ))}
+            </div>
+          </Reel>
         ))}
       </SlotMachine>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 2 }}>
