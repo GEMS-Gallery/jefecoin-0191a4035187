@@ -28,7 +28,7 @@ const spinAnimation = keyframes`
     transform: translateY(0);
   }
   100% {
-    transform: translateY(-${100 / 6}%);
+    transform: translateY(-100%);
   }
 `;
 
@@ -46,15 +46,13 @@ const Reel = styled(Box)<{ spinning: boolean }>(({
   '& > div': {
     display: 'flex',
     flexDirection: 'column',
-    animation: spinning ? `${spinAnimation} 0.5s linear infinite` : 'none',
+    animation: spinning ? `${spinAnimation} 1s linear infinite` : 'none',
   }
 }));
 
-const symbols = ["🍒", "🍋", "🍊", "🍇", "💰", "7️⃣"];
-
 const App: React.FC = () => {
   const [balance, setBalance] = useState<bigint>(BigInt(0));
-  const [currentSymbols, setCurrentSymbols] = useState<string[]>(['', '', '']);
+  const [symbols, setSymbols] = useState<string[]>(['', '', '']);
   const [bet, setBet] = useState<string>('10');
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
@@ -79,7 +77,7 @@ const App: React.FC = () => {
       setTimeout(async () => {
         const result = await backend.spin(BigInt(bet));
         if ('ok' in result) {
-          setCurrentSymbols(result.ok.symbols);
+          setSymbols(result.ok.symbols);
           setModalContent(`You won ${result.ok.winAmount.toString()} JefeCoins!`);
         } else {
           setModalContent(result.err);
@@ -87,7 +85,7 @@ const App: React.FC = () => {
         setModalIsOpen(true);
         fetchBalance();
         setIsSpinning(false);
-      }, 2000);
+      }, 1000);
     } catch (error) {
       console.error('Error spinning:', error);
       setModalContent('An error occurred while spinning.');
@@ -105,11 +103,11 @@ const App: React.FC = () => {
         Balance: {balance.toString()} JefeCoins
       </Typography>
       <SlotMachine>
-        {[0, 1, 2].map((index) => (
+        {symbols.map((symbol, index) => (
           <Reel key={index} spinning={isSpinning}>
             <div>
-              {[...symbols, ...symbols].map((symbol, i) => (
-                <div key={i}>{symbol}</div>
+              {[...Array(20)].map((_, i) => (
+                <div key={i}>{symbol || '?'}</div>
               ))}
             </div>
           </Reel>
